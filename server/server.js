@@ -6,6 +6,7 @@ var bodyParser = require('body-parser') // parses the body, converts the string 
 var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todo')
 var {User} = require('./models/user')
+const {ObjectID} = require('mongodb')
 
 var app = express();
 
@@ -20,6 +21,29 @@ app.post('/todos',(req,res) =>{
 	}, (e) => {
 		res.status(400).send(e)
 	})
+})
+
+app.get('/todos', (req,res) =>{
+	Todo.find().then((todos) => {
+		res.send({todos}) //If you pass todos array as such , we cannot run custom methods on it. So pass in an object so that in future we can add some custom functions to it.
+	},(e) => {
+		res.status(400).send(e)
+	})
+})
+
+app.get('/todos/:id',(req,res) =>{
+	// res.send(req.params);
+	var id = req.params.id;
+
+	if(!ObjectID.isValid(id)){
+	    return res.status(404).send()
+	}
+	Todo.findById(id).then((todo)=>{
+	if(!todo){
+		return res.status(404).send(e)
+	}
+	res.send({todo})
+   }).catch((e) => res.status(400).send(e))
 })
 
 app.listen(3000, () =>{
